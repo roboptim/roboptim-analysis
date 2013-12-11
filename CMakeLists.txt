@@ -30,6 +30,7 @@ SETUP_PROJECT()
 
 # Search for dependencies.
 ADD_REQUIRED_DEPENDENCY("roboptim-core >= 0.5")
+ADD_REQUIRED_DEPENDENCY("roboptim-core-python")
 
 # Look for Python 2.7
 SET(Python_ADDITIONAL_VERSIONS 2.7)
