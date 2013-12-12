@@ -1,0 +1,95 @@
+#!/usr/bin/env python
+# vim: ai ts=4 sts=4 et sw=4
+import os
+import argparse
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import cm
+
+def generate_diff(filename):
+    """ Compute the evolution of some CSV values at each iteration
+    """
+    # Load structured array
+    data = np.genfromtxt(filename, delimiter = ',',
+                         dtype=np.float64, names = True)
+
+    diff = np.zeros(data.shape, dtype=data.dtype)
+    for i in xrange(1,data.size):
+        if data[i-1] != data[i]:
+            #diff[i] = data[i]-data[i-1]
+            diff[i] = np.array([[a-b] for a, b in zip(data[i], data[i-1])])
+
+    return diff
+
+def plot_csv_data(dataArray, y_label):
+    cmap = cm.gnuplot2
+
+    fig, ax = plt.subplots()
+    i = 0
+    N = len(dataArray.dtype.names)
+    lines = []
+
+    for col_name in dataArray.dtype.names:
+        c = cmap(float(i+1)/(N+1))
+        line, = ax.plot(dataArray[col_name], label=col_name, color=c)
+        lines.append(line)
+        i+=1
+
+    # If mpldatacursor is available
+    try:
+        from mpldatacursor import HighlightingDataCursor
+        HighlightingDataCursor(lines, highlight_color='red')
+    except ImportError:
+        pass # module does not exist
+
+    plt.tight_layout()
+    plt.xlabel("iteration number")
+    plt.ylabel(y_label)
+    plt.show(block=True)
+
+def plot_csv_file(filename, y_label):
+    """ Plot CSV data
+    """
+    dataArray = np.genfromtxt(filename, delimiter = ',', names = True)
+    plot_csv_data(dataArray, y_label)
+
+def main(**kwargs):
+    # Debug: check key/values provided by argparse
+    #for key, value in kwargs.iteritems():
+    #    print key, value
+
+    log_dir = kwargs['dir']
+    log_files = kwargs['files']
+    plot_raw = kwargs['plot_raw']
+    plot_diff = kwargs['plot_diff']
+
+    # Check the existence of the log directory
+    if not(os.path.isdir(log_dir) and os.path.isfile(log_dir + '/journal.log')):
+        raise Exception("Invalid RobOptim log directory")
+
+    for f in log_files:
+        filename = log_dir + '/' + f
+
+        if plot_raw:
+            plot_csv_file(filename, "raw data")
+
+        if plot_diff:
+            plot_csv_data(generate_diff(filename),
+                          "difference between successive iterations")
+
+if __name__ == '__main__':
+    # Parse arguments
+    parser = argparse.ArgumentParser(description='Plot CSV data from RobOptim logs',
+                                     version='%(prog)s 0.1')
+    parser.add_argument('dir', type=str, help='log directory')
+    parser.add_argument('--files', nargs='*', type=str, help='input CSV files',
+                        default=['x-evolution.csv'])
+    parser.add_argument('--plot-diff', nargs='?', type=bool,
+                        const=True, default=False,
+                        help='whether to plot the difference of each iteration')
+    parser.add_argument('--plot-raw', nargs='?', type=bool,
+                        const=True, default=False,
+                        help='whether to plot the raw data')
+    args = parser.parse_args()
+    main(**vars(args))
