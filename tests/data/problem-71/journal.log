@@ -1,0 +1,130 @@
+********************************************************************************
+RobOptim Optimization Logger
+ - current time: 2013-12-12T17:12:29.895473Z
+ - roboptim-core version: 2.0-233-gf287-dirty
+********************************************************************************
+Solver:
+  Problem:
+    x₀ x₃ (x₀ + x₁ + x₂) + x₂ (twice differentiable function)
+    Argument's bounds: (1, 5), (1, 5), (1, 5), (1, 5)
+    Argument's scales: 1, 1, 1, 1
+    Number of constraints: 1
+    Constraint 0
+        x₀ x₁ x₂ x₃
+        x₀² + x₁² + x₂² + x₃² (twice differentiable function)
+        Bounds: (25, inf), (40, 40)
+        Scales: 1, 1
+        Initial value: [2](25, 52) (constraint not satisfied)
+        
+    Starting point: [4](1,5,5,1)
+    Starting value: [1](16)
+    Infinity value (for all functions): inf
+  Parameters:
+    ipopt.expect_infeasible_problem (enable heuristics to quickly detect an infeasible problem): no
+    ipopt.file_print_level (verbosity level for output file): 5
+    ipopt.hessian_approximation (): limited-memory
+    ipopt.linear_solver (linear_solver): mumps
+    ipopt.mu_strategy (update strategy for barrier parameter): adaptive
+    ipopt.option_file_name (file name of options file (to overwrite default)): 
+    ipopt.output_file (file name of desired output file (leave unset for no file output)): .log
+    ipopt.print_level (output verbosity level): 5
+    ipopt.print_options_documentation (switch to print all algorithmic options): no
+    ipopt.print_user_options (print all options set by the user): no
+    ipopt.tol (desired convergence tolerance (relative)): 1e-07
+    max-iterations (number of iterations): 3000
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Callback call number: 0
+Elapsed time since last call: 00:00:00.003788
+- x:
+  [4](1.01,4.96,4.96,1.01)
+- f(x):
+  16.1097
+- viol_g(x):
+  11.2434
+--------------------------------------------------------------------------------
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Callback call number: 1
+Elapsed time since last call: 00:00:00.000779
+- x:
+  [4](1.14566,4.38369,4.3456,1.15573)
+- f(x):
+  17.4207
+- viol_g(x):
+  0.840027
+--------------------------------------------------------------------------------
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Callback call number: 2
+Elapsed time since last call: 00:00:00.000480
+- x:
+  [4](1.14694,4.66077,3.97535,1.17152)
+- f(x):
+  17.1205
+- viol_g(x):
+  0.214105
+--------------------------------------------------------------------------------
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Callback call number: 3
+Elapsed time since last call: 00:00:00.000678
+- x:
+  [4](1.05277,4.70811,3.88536,1.28934)
+- f(x):
+  16.979
+- viol_g(x):
+  0.214509
+--------------------------------------------------------------------------------
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Callback call number: 4
+Elapsed time since last call: 00:00:00.000623
+- x:
+  [4](1.00285,4.74181,3.82723,1.36943)
+- f(x):
+  16.9726
+- viol_g(x):
+  0.0781041
+--------------------------------------------------------------------------------
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Callback call number: 5
+Elapsed time since last call: 00:00:00.000717
+- x:
+  [4](1.00004,4.7439,3.82003,1.37946)
+- f(x):
+  17.0137
+- viol_g(x):
+  0.000694272
+--------------------------------------------------------------------------------
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Callback call number: 6
+Elapsed time since last call: 00:00:00.000725
+- x:
+  [4](1,4.74302,3.82112,1.37941)
+- f(x):
+  17.014
+- viol_g(x):
+  1.95864e-06
+--------------------------------------------------------------------------------
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Callback call number: 7
+Elapsed time since last call: 00:00:00.000916
+- x:
+  [4](1,4.743,3.82115,1.37941)
+- f(x):
+  17.014
+- viol_g(x):
+  1.47251e-09
+--------------------------------------------------------------------------------
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Callback call number: 8
+Elapsed time since last call: 00:00:00.000940
+- x:
+  [4](1,4.743,3.82115,1.37941)
+- f(x):
+  17.014
+- viol_g(x):
+  3.55271e-15
+--------------------------------------------------------------------------------
+********************************************************************************
+RobOptim Optimization Logger
+ - current time: 2013-12-12T17:12:29.906419Z
+ - total elapsed time: 00:00:00.010946
+********************************************************************************
