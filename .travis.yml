@@ -6,7 +6,7 @@ python:
   - "2.7"
 env:
   global:
-  - APT_DEPENDENCIES="doxygen doxygen-latex libltdl-dev libboost-all-dev liblog4cxx10-dev libeigen3-dev python python-dev python-numpy"
+  - APT_DEPENDENCIES="doxygen doxygen-latex libltdl-dev libboost-all-dev liblog4cxx10-dev python python-dev python-numpy"
   - GIT_DEPENDENCIES="roboptim/roboptim-core roboptim/roboptim-core-python"
   - DEBSIGN_KEYID=5AE5CD75
   - PPA_URI="roboptim/ppa"

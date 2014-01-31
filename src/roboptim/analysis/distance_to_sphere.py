@@ -1,0 +1,100 @@
+#!/usr/bin/env python2
+# vim: ai ts=4 sts=4 et sw=4
+
+import argparse, os, math
+import numpy as np
+
+from mpl_toolkits.mplot3d import Axes3D
+from itertools import product, combinations
+import matplotlib.pyplot as plt
+
+def sphericalCoordinates (theta, phi):
+    return np.array((math.cos(theta) * math.cos(phi),
+                     math.sin(theta) * math.cos(phi),
+                     math.sin(phi)))
+
+sphere_radius = 1.
+target = 2. * sphericalCoordinates(-1.5, -1.2)
+expected = sphericalCoordinates(-1.5, -1.2)
+
+def plot_result_sphere(log_dir):
+    # Load x for each iteration
+    x_file = log_dir + '/x-evolution.csv'
+    x_vec = np.genfromtxt(x_file, delimiter = ',',
+                          dtype=np.float64, names = True)
+
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.set_aspect('equal')
+
+    # Draw 3D sphere
+    u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
+    x=sphere_radius*np.cos(u)*np.sin(v)
+    y=sphere_radius*np.sin(u)*np.sin(v)
+    z=sphere_radius*np.cos(v)
+    ax.plot_wireframe(x, y, z, color="r",  alpha=0.2)
+
+    # Draw target
+    ax.scatter(target[0], target[1], target[2], color="b", s=10)
+
+    # Draw expected
+    ax.scatter(expected[0], expected[1], expected[2],
+               color="g", marker="^", s=100, alpha=0.5)
+
+    # Get 3D points for each iteration
+    p = np.zeros((x_vec.size, 3))
+    row = 0
+    for x in x_vec:
+      p[row,:] = sphericalCoordinates(x[0], x[1])
+      row += 1
+
+    # Plot x at each iteration and draw lines between each point
+    ax.plot(p[:,0], p[:,1], p[:,2], 'b', lw=1, alpha=0.7)
+    ax.scatter(p[:,0], p[:,1], p[:,2], s=5)
+
+    # Create cubic bounding box to simulate equal aspect ratio
+    r = [-1, 1]
+    for s, e in combinations(np.array(list(product(r,r,r))), 2):
+        if np.sum(np.abs(s-e)) == r[1]-r[0]:
+            ax.plot3D(*zip(s,e), color="b",  alpha=0.)
+
+    # Draw a vector from the last point to the target
+    from matplotlib.patches import FancyArrowPatch
+    from mpl_toolkits.mplot3d import proj3d
+
+    class Arrow3D(FancyArrowPatch):
+        def __init__(self, xs, ys, zs, *args, **kwargs):
+            FancyArrowPatch.__init__(self, (0,0), (0,0), *args, **kwargs)
+            self._verts3d = xs, ys, zs
+
+        def draw(self, renderer):
+            xs3d, ys3d, zs3d = self._verts3d
+            xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, renderer.M)
+            self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
+            FancyArrowPatch.draw(self, renderer)
+
+    a = Arrow3D([p[-1,0],target[0]],
+                [p[-1,1],target[1]],
+                [p[-1,2],target[2]],
+                mutation_scale=20, lw=1, arrowstyle="-|>", color="k")
+    ax.add_artist(a)
+    plt.show()
+
+
+def main(**kwargs):
+    log_dir = kwargs['dir']
+
+    # Check the existence of the log directory
+    if not(os.path.isdir(log_dir) and os.path.isfile(log_dir + '/journal.log')):
+        raise Exception("Invalid RobOptim log directory")
+
+    plot_result_sphere(log_dir)
+
+
+if __name__ == '__main__':
+    # Parse arguments
+    parser = argparse.ArgumentParser(description='Plot result of RobOptim\'s distance-to-sphere test',
+                                     version='%(prog)s 0.1')
+    parser.add_argument('dir', type=str, help='log directory')
+    args = parser.parse_args()
+    main(**vars(args))
