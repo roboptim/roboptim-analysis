@@ -41,19 +41,15 @@ def generate_benchmark_yaml(filenames, output_dir):
         else:
             raise Exception("Missing \"total elapsed time\" in log "
                             "file.")
-        benchmark.append(
-            {
+
+        d = {
                 'solver': solver,
                 'testsuite': test_suite,
                 'problem': problem,
                 'time': t
             }
-        )
-        print(name)
-        print(solver)
-        print(problem)
-        print(t)
-        print(test_suite)
+        benchmark.append(d)
+        print(d)
 
     # Write dictionary to YAML file
     with open(output_dir + '/benchmark.yml', 'w') as outfile:
