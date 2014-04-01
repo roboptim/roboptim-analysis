@@ -45,7 +45,12 @@ EXECUTE_PROCESS(
 
 HEADER_INSTALL("${HEADERS}")
 
-ADD_SUBDIRECTORY(src)
+INSTALL(FILES
+  bin/distance_to_sphere
+  bin/log_to_yaml
+  bin/plot_csv
+  DESTINATION ${CMAKE_INSTALL_BINDIR})
+
 ADD_SUBDIRECTORY(tests)
 
 SETUP_PROJECT_FINALIZE()
