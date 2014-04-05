@@ -46,6 +46,7 @@ EXECUTE_PROCESS(
 HEADER_INSTALL("${HEADERS}")
 
 INSTALL(FILES
+  bin/capsule_display
   bin/distance_to_sphere
   bin/log_to_yaml
   bin/plot_csv

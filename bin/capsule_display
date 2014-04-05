@@ -1,0 +1,111 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+# vim: ai ts=4 sts=4 et sw=4 ft=python
+
+import argparse
+import numpy as np
+
+from numpy import pi, sin, cos, mgrid
+from mayavi import mlab
+
+def plot_result_capsule(capsule, polyhedron):
+    P0 = capsule["P0"]
+    P1 = capsule["P1"]
+    r = capsule["r"]
+    dir = np.array([0., 0., 1.])
+    norm = np.linalg.norm(P1-P0)
+    if norm > 1e-3:
+        dir = (P1-P0)/norm
+
+    x0 = [1, 0, 0]
+    y0 = [0, 1, 0]
+    z0 = [0, 0, 1]
+
+    # Capsule is prepared in the following basis: B1 = (x1, z1, dir)
+    # Let's take x1 = z0 x dir (or y0 x dir)
+    x1 = np.cross(z0, dir)
+    if np.linalg.norm(x1) < 1e-6:
+        x1 = np.cross(y0, dir)
+    y1 = np.cross(dir, x1)
+
+    # We note R the rotation matrix from B = (x, y, z) to B'
+    R = np.identity(3)
+    R[0, :] = x1
+    R[1, :] = y1
+    R[2, :] = dir
+
+    def rotate_xyz(rot, x, y, z):
+        l1 = x.shape[0]
+        l2 = x.shape[1]
+        for i in xrange(l1):
+            for j in xrange(l2):
+                v = np.array([x[i, j], y[i, j], z[i, j]])
+                x[i, j] = R[:, 0].dot(v)
+                y[i, j] = R[:, 1].dot(v)
+                z[i, j] = R[:, 2].dot(v)
+        return x, y, z
+
+    color = (0, 0, 1)
+    n = 500
+    dtheta = 2*pi/n
+    dz = norm/n
+    [theta, z] = mgrid[-pi:pi+dtheta:dtheta, -norm/2:norm/2:dz]
+    # x² + y² = r²
+    x = r*cos(theta)
+    y = r*sin(theta)
+    x, y, z = rotate_xyz(R.T, x, y, z)
+    cylinder = mlab.mesh(x, y, z, color=color, opacity=0.4)
+
+    [theta, phi] = mgrid[-pi:pi+dtheta:dtheta, -dtheta:pi/2+dtheta:dtheta]
+    # x² + y² + z² = r²
+    x = r*cos(theta)*sin(phi)
+    y = r*sin(theta)*sin(phi)
+    z = -norm/2 - r*cos(phi)
+    x, y, z = rotate_xyz(R.T, x, y, z)
+    halfsphere0 = mlab.mesh(x, y, z, color=(0, 0,1), opacity=0.4)
+
+    x = r*cos(theta)*sin(phi)
+    y = r*sin(theta)*sin(phi)
+    z = norm/2 + r*cos(phi)
+    x, y, z = rotate_xyz(R.T, x, y, z)
+    halfsphere1 = mlab.mesh(x, y, z, color=color, opacity=0.4)
+
+    # Plot polyhedron
+    points = mlab.points3d(polyhedron[:,0],
+                           polyhedron[:,1],
+                           polyhedron[:,2],
+                           scale_factor=0.05,
+                           color=(1,0,0))
+
+    mlab.show()
+
+    globals().update(locals())
+
+
+def main(**kwargs):
+    capsule = dict()
+    capsule["P0"] = np.array([-2.4191, 0., 0.])
+    capsule["P1"] = np.array([ 2.4191, 0., 0.])
+    capsule["r"] = 0.711719
+
+    l = 0.5
+    polyhedron = np.array([[-5*l, -l, -l]])
+    polyhedron = np.append(polyhedron, [[-5*l, -l,  l]], axis=0)
+    polyhedron = np.append(polyhedron, [[-5*l,  l, -l]], axis=0)
+    polyhedron = np.append(polyhedron, [[-5*l,  l,  l]], axis=0)
+    polyhedron = np.append(polyhedron, [[ 5*l, -l, -l]], axis=0)
+    polyhedron = np.append(polyhedron, [[ 5*l, -l,  l]], axis=0)
+    polyhedron = np.append(polyhedron, [[ 5*l,  l, -l]], axis=0)
+    polyhedron = np.append(polyhedron, [[ 5*l,  l,  l]], axis=0)
+
+    plot_result_capsule(capsule, polyhedron)
+
+
+if __name__ == '__main__':
+    # Parse arguments
+    parser = argparse.ArgumentParser(description='Plot result of RobOptim\'s '
+                                     'capsule optimization',
+                                     version='%(prog)s 0.1')
+    # TODO: get polyhedron and capsule parameters from CLI
+    args = parser.parse_args()
+    main(**vars(args))
