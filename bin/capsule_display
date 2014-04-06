@@ -11,10 +11,9 @@ from numpy import pi, sin, cos, mgrid
 from mayavi import mlab
 from collada import Collada
 
-def display_capsule(capsule, polyhedron):
+def display_capsule(capsule, color):
     """
-    Display the capsule and the encapsulated polyhedron
-    with the Mayavi library.
+    Display a capsule with a given color.
     """
     P0 = capsule["P0"]
     P1 = capsule["P1"]
@@ -66,7 +65,6 @@ def display_capsule(capsule, polyhedron):
                 z[i, j] = trans[2] + z[i, j]
         return x, y, z
 
-    color = (0, 0, 1)
     n = 100
     dtheta = 2*pi/n
     dz = norm/n
@@ -85,7 +83,7 @@ def display_capsule(capsule, polyhedron):
     z = -norm/2 - r*cos(phi)
     x, y, z = rotate_xyz(R.T, x, y, z)
     x, y, z = translate_xyz(mid, x, y, z)
-    halfsphere0 = mlab.mesh(x, y, z, color=(0, 0,1), opacity=0.4)
+    halfsphere0 = mlab.mesh(x, y, z, color=color, opacity=0.4)
 
     x = r*cos(theta)*sin(phi)
     y = r*sin(theta)*sin(phi)
@@ -94,6 +92,22 @@ def display_capsule(capsule, polyhedron):
     x, y, z = translate_xyz(mid, x, y, z)
     halfsphere1 = mlab.mesh(x, y, z, color=color, opacity=0.4)
 
+    axes = zip (P0,P1)
+    endPoints = mlab.points3d(axes[0],
+                              axes[1],
+                              axes[2],
+                              scale_factor=0.01,
+                              color=color)
+
+
+def display_result(polyhedron, initial_capsule, solution_capsule):
+    """
+    Display the capsule (initial and solution) and the encapsulated polyhedron
+    with the Mayavi library.
+    """
+    display_capsule(initial_capsule, (0, 1, 0))
+    display_capsule(solution_capsule, (0, 0, 1))
+
     # Plot polyhedron
     points = mlab.points3d(polyhedron[:,0],
                            polyhedron[:,1],
@@ -101,13 +115,8 @@ def display_capsule(capsule, polyhedron):
                            scale_factor=0.005,
                            color=(1,0,0))
 
-    axes = zip (P0,P1)
-    endPoints = mlab.points3d(axes[0],
-                              axes[1],
-                              axes[2],
-                              scale_factor=0.01)
-
     mlab.show()
+
 
 def compute_capsule(collada_file):
     """
@@ -130,23 +139,36 @@ def compute_capsule(collada_file):
 
     output = p.stdout.readlines()
     print "".join(output)
-    result_str = output[-1][4:-2]
-    result = map(np.float64, result_str.split(','))
-    retval = p.wait()
-    capsule = dict()
-    capsule["P0"] = np.array(result[0:3])
-    capsule["P1"] = np.array(result[3:6])
-    capsule["r"] = result[6]
 
-    return polyhedron,capsule
+    # Initial: [7](.......)
+    initial_str = output[-2][13:-2]
+    initial = map(np.float64, initial_str.split(','))
+
+    # Solution: [7](.......)
+    solution_str = output[-1][14:-2]
+    solution = map(np.float64, solution_str.split(','))
+
+    retval = p.wait()
+
+    initial_capsule = dict()
+    initial_capsule["P0"] = np.array(initial[0:3])
+    initial_capsule["P1"] = np.array(initial[3:6])
+    initial_capsule["r"] = initial[6]
+
+    solution_capsule = dict()
+    solution_capsule["P0"] = np.array(solution[0:3])
+    solution_capsule["P1"] = np.array(solution[3:6])
+    solution_capsule["r"] = solution[6]
+
+    return polyhedron,initial_capsule,solution_capsule
 
 
 def process(collada_file):
     """
     Process a Collada file: compute the capsule and display the result.
     """
-    polyhedron,capsule = compute_capsule(collada_file)
-    display_capsule(capsule, polyhedron)
+    polyhedron, initial_capsule, solution_capsule = compute_capsule(collada_file)
+    display_result(polyhedron, initial_capsule, solution_capsule)
 
 
 if __name__ == '__main__':
