@@ -9,8 +9,13 @@ import re
 
 from numpy import pi, sin, cos, mgrid
 from mayavi import mlab
+from collada import Collada
 
-def plot_result_capsule(capsule, polyhedron):
+def display_capsule(capsule, polyhedron):
+    """
+    Display the capsule and the encapsulated polyhedron
+    with the Mayavi library.
+    """
     P0 = capsule["P0"]
     P1 = capsule["P1"]
     mid = 0.5 * (P0 + P1)
@@ -93,33 +98,30 @@ def plot_result_capsule(capsule, polyhedron):
     points = mlab.points3d(polyhedron[:,0],
                            polyhedron[:,1],
                            polyhedron[:,2],
-                           scale_factor=0.05,
+                           scale_factor=0.005,
                            color=(1,0,0))
 
     axes = zip (P0,P1)
     endPoints = mlab.points3d(axes[0],
                               axes[1],
                               axes[2],
-                              scale_factor=0.05)
+                              scale_factor=0.01)
 
     mlab.show()
 
+def compute_capsule(collada_file):
+    """
+    Get the mesh vertices and compute the optimal bounding capsule.
+    """
+    mesh = Collada(collada_file)
 
-def main(**kwargs):
-    l = 0.5
-    polyhedron = np.array([[-5*l, -l, -l]])
-    polyhedron = np.append(polyhedron, [[-5*l, -l,  l]], axis=0)
-    polyhedron = np.append(polyhedron, [[-5*l,  l, -l]], axis=0)
-    polyhedron = np.append(polyhedron, [[-5*l,  l,  l]], axis=0)
-    polyhedron = np.append(polyhedron, [[ 2*l, -l, -l]], axis=0)
-    polyhedron = np.append(polyhedron, [[ 2*l, -l,  l]], axis=0)
-    polyhedron = np.append(polyhedron, [[ 2*l,  l, -l]], axis=0)
-    polyhedron = np.append(polyhedron, [[ 2*l,  l,  l]], axis=0)
-    polyhedron = np.append(polyhedron, [[ 2*l,  l+0.5,  l+0.5]], axis=0)
-    polyhedron = np.append(polyhedron, [[ 2*l,  l+0.5,  l-0.5]], axis=0)
-    polyhedron = np.append(polyhedron, [[ 2*l,  l-0.5,  l+0.5]], axis=0)
-    polyhedron = np.append(polyhedron, [[ 2*l,  l-0.5,  l-0.5]], axis=0)
+    polyhedron = np.array([mesh.geometries[0].primitives[0].vertex[0]])
+    for geom in mesh.geometries:
+        for primitives in geom.primitives:
+            polyhedron = np.append(polyhedron, np.array(primitives.vertex),
+                                   axis=0)
 
+    np.set_printoptions(threshold=np.nan)
     points_str = re.sub("\n", "", str(np.hstack(polyhedron))[1:-1])
     p = subprocess.Popen(['capsule-generator --points ' + points_str],
                          shell=True,
@@ -131,13 +133,20 @@ def main(**kwargs):
     result_str = output[-1][4:-2]
     result = map(np.float64, result_str.split(','))
     retval = p.wait()
-
     capsule = dict()
     capsule["P0"] = np.array(result[0:3])
     capsule["P1"] = np.array(result[3:6])
     capsule["r"] = result[6]
 
-    plot_result_capsule(capsule, polyhedron)
+    return polyhedron,capsule
+
+
+def process(collada_file):
+    """
+    Process a Collada file: compute the capsule and display the result.
+    """
+    polyhedron,capsule = compute_capsule(collada_file)
+    display_capsule(capsule, polyhedron)
 
 
 if __name__ == '__main__':
@@ -145,6 +154,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Plot result of RobOptim\'s '
                                      'capsule optimization',
                                      version='%(prog)s 0.1')
-    # TODO: get Collada file from CLI
+    parser.add_argument('files', metavar='F', type=str, nargs='+',
+                        help='List of Collada files to process.')
+    # Get Collada file from CLI
     args = parser.parse_args()
-    main(**vars(args))
+    if args.files:
+        for collada_file in args.files:
+            print('Processing ' + collada_file + '...')
+            process(collada_file)
