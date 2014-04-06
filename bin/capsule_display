@@ -29,13 +29,16 @@ def plot_result_capsule(capsule, polyhedron):
     x1 = np.cross(z0, dir)
     if np.linalg.norm(x1) < 1e-6:
         x1 = np.cross(y0, dir)
+    x1 /= np.linalg.norm(x1)
     y1 = np.cross(dir, x1)
+    y1 /= np.linalg.norm(y1)
 
     # We note R the rotation matrix from B = (x, y, z) to B'
     R = np.identity(3)
     R[0, :] = x1
     R[1, :] = y1
     R[2, :] = dir
+    assert abs(np.linalg.det(R) - 1) < 1e-6
 
     def rotate_xyz(rot, x, y, z):
         l1 = x.shape[0]
@@ -124,7 +127,7 @@ def main(**kwargs):
                          stderr=subprocess.STDOUT)
 
     output = p.stdout.readlines()
-    print output
+    print "".join(output)
     result_str = output[-1][4:-2]
     result = map(np.float64, result_str.split(','))
     retval = p.wait()
