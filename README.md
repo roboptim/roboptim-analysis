@@ -1,7 +1,7 @@
 roboptim-analysis
 ====================
 
-[![Build Status](https://travis-ci.org/roboptim/roboptim-analysis.png?branch=master)](https://travis-ci.org/roboptim/roboptim-analysis)
+[![Build Status](https://travis-ci.org/roboptim/roboptim-analysis.png?branch=master)](https://travis-ci.org/roboptim/roboptim-analysis) [![Landscape](https://landscape.io/github/roboptim/roboptim-analysis/master/landscape.png)](https://landscape.io/github/roboptim/roboptim-analysis/master)
 
 This package provides Python scripts to post-process optimisation logs
 produced by RobOptim.
