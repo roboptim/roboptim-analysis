@@ -105,20 +105,24 @@ def display_result(polyhedron, initial_capsule, solution_capsule):
     Display the capsule (initial and solution) and the encapsulated polyhedron
     with the Mayavi library.
     """
-    display_capsule(initial_capsule, (0, 1, 0))
-    display_capsule(solution_capsule, (0, 0, 1))
+    initial_color = (0, 1, 0)
+    solution_color = (0, 0, 1)
+    polyhedron_color = (1, 0, 0)
+    display_capsule(initial_capsule, initial_color)
+    display_capsule(solution_capsule, solution_color)
 
     # Plot polyhedron
     points = mlab.points3d(polyhedron[:,0],
                            polyhedron[:,1],
                            polyhedron[:,2],
                            scale_factor=0.005,
-                           color=(1,0,0))
+                           color=polyhedron_color)
 
+    mlab.title("Optimal bounding capsule generator", height=0.04, size=0.4)
     mlab.show()
 
 
-def compute_capsule(collada_file):
+def compute_capsule(collada_file, solver):
     """
     Get the mesh vertices and compute the optimal bounding capsule.
     """
@@ -132,7 +136,8 @@ def compute_capsule(collada_file):
 
     np.set_printoptions(threshold=np.nan)
     points_str = re.sub("\n", "", str(np.hstack(polyhedron))[1:-1])
-    p = subprocess.Popen(['capsule-generator --points ' + points_str],
+    p = subprocess.Popen(['capsule-generator --solver ' + solver
+                          + ' --points ' + points_str],
                          shell=True,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
@@ -163,11 +168,12 @@ def compute_capsule(collada_file):
     return polyhedron,initial_capsule,solution_capsule
 
 
-def process(collada_file):
+def process(collada_file, solver):
     """
     Process a Collada file: compute the capsule and display the result.
     """
-    polyhedron, initial_capsule, solution_capsule = compute_capsule(collada_file)
+    polyhedron, initial_capsule, solution_capsule = compute_capsule(collada_file,
+                                                                    solver)
     display_result(polyhedron, initial_capsule, solution_capsule)
 
 
@@ -178,9 +184,12 @@ if __name__ == '__main__':
                                      version='%(prog)s 0.1')
     parser.add_argument('files', metavar='F', type=str, nargs='+',
                         help='List of Collada files to process.')
+    parser.add_argument('-s', '--solver', type=str, nargs='?', default='ipopt',
+                        help='RobOptim solver that will be used.')
     # Get Collada file from CLI
     args = parser.parse_args()
     if args.files:
         for collada_file in args.files:
-            print('Processing ' + collada_file + '...')
-            process(collada_file)
+            print('Processing ' + collada_file
+                   + ' with ' + args.solver + ' solver...')
+            process(collada_file, args.solver)
