@@ -43,14 +43,23 @@ def generate_benchmark_yaml(filenames, output_dir):
             raise Exception("Missing \"total elapsed time\" in log "
                             "file.")
 
-        d = {
-                'solver': solver,
-                'testsuite': test_suite,
-                'problem': problem,
-                'time': t
-            }
-        benchmark.append(d)
-        print(d)
+        # Get whether the optimal solution was found
+        export_result = True
+        optimal_match = re.search(r'Optimal solution found: ([a-zA-Z]+)', file)
+        if optimal_match:
+          export_result = (optimal_match.group(1).lower() == 'true')
+
+        # If we decide to export the result (i.e. the optimal solution was
+        # found)
+        if export_result:
+          d = {
+                  'solver': solver,
+                  'testsuite': test_suite,
+                  'problem': problem,
+                  'time': t
+              }
+          benchmark.append(d)
+          print(d)
 
     # Write dictionary to YAML file
     with open(output_dir + '/benchmark.yml', 'w') as outfile:
