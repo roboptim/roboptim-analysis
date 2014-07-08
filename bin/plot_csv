@@ -8,34 +8,51 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-def generate_diff(filename):
-    """ Compute the evolution of some CSV values at each iteration
+def generate_diff(filenames):
+    """
+    Compute the evolution of some CSV values at each iteration
     """
     # Load structured array
-    data = np.genfromtxt(filename, delimiter = ',',
-                         dtype=np.float64, names = True)
+    dataList = list()
+    for f in filenames:
+        dataList.append(np.genfromtxt(f, delimiter = ',',
+                                      dtype=np.float64, names = True))
+        # Add the file name to the label (since multiple files could shared
+        # the same names)
+        if (len(filenames) > 1):
+            dataList[-1].dtype.names = tuple(os.path.basename(f) + ": " + n
+                                             for n in dataList[-1].dtype.names)
 
-    diff = np.zeros(data.shape, dtype=data.dtype)
+    diffList = list()
+    for data in dataList:
+      diffList.append(np.zeros(data.shape, dtype=data.dtype))
+      diffList[-1].dtype.names = data.dtype.names
     for i in xrange(1,data.size):
         if data[i-1] != data[i]:
             #diff[i] = data[i]-data[i-1]
-            diff[i] = np.array([[a-b] for a, b in zip(data[i], data[i-1])])
+            diffList[-1][i] = np.array([[a-b] for a, b in zip(data[i], data[i-1])])
 
-    return diff
+    return diffList
 
-def plot_csv_data(dataArray, y_label):
+def plot_csv_data(dataList, y_label):
+    """
+    Plot a list of CSV data
+    """
     cmap = cm.gnuplot2
 
     fig, ax = plt.subplots()
-    i = 0
-    N = len(dataArray.dtype.names)
-    lines = []
 
-    for col_name in dataArray.dtype.names:
-        c = cmap(float(i+1)/(N+1))
-        line, = ax.plot(dataArray[col_name], label=col_name, color=c)
-        lines.append(line)
-        i+=1
+    lines = []
+    N = sum(len(data.dtype.names) for data in dataList)
+    i = 0
+
+    for data in dataList:
+      for col_name in data.dtype.names:
+          # Use a different color for each line
+          c = cmap(float(i+1)/(N+1))
+          line, = ax.plot(data[col_name], label=col_name, color=c)
+          lines.append(line)
+          i+=1
 
     # If mpldatacursor is available
     try:
@@ -44,16 +61,31 @@ def plot_csv_data(dataArray, y_label):
     except ImportError:
         pass # module does not exist
 
+    # Legend
+
     plt.tight_layout()
     plt.xlabel("iteration number")
     plt.ylabel(y_label)
+    plt.legend(loc='upper right')
     plt.show(block=True)
 
-def plot_csv_file(filename, y_label):
-    """ Plot CSV data
+def plot_csv_file(filenames, y_label):
     """
-    dataArray = np.genfromtxt(filename, delimiter = ',', names = True)
-    plot_csv_data(dataArray, y_label)
+    Plot CSV files.
+    """
+
+    # Generate data array
+    dataList = list()
+    for f in filenames:
+        dataList.append(np.genfromtxt(f, delimiter = ',', names = True))
+        # Add the file name to the label (since multiple files could shared
+        # the same names)
+        if (len(filenames) > 1):
+            dataList[-1].dtype.names = tuple(os.path.basename(f) + ": " + n
+                                             for n in dataList[-1].dtype.names)
+
+    # Plot generated data
+    plot_csv_data(dataList, y_label)
 
 def main(**kwargs):
     # Debug: check key/values provided by argparse
@@ -69,15 +101,16 @@ def main(**kwargs):
     if not(os.path.isdir(log_dir) and os.path.isfile(log_dir + '/journal.log')):
         raise Exception("Invalid RobOptim log directory")
 
+    filenames = list()
     for f in log_files:
-        filename = log_dir + '/' + f
+        filenames.append(log_dir + '/' + f)
 
-        if plot_raw:
-            plot_csv_file(filename, "raw data")
+    if plot_raw:
+        plot_csv_file(filenames, y_label="raw data")
 
-        if plot_diff:
-            plot_csv_data(generate_diff(filename),
-                          "difference between successive iterations")
+    if plot_diff:
+        plot_csv_data(generate_diff(filenames),
+                      y_label="difference between successive iterations")
 
 if __name__ == '__main__':
     # Parse arguments
