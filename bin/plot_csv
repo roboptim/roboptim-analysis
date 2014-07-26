@@ -1,12 +1,18 @@
 #!/usr/bin/env python2
 # -*- python -*-
+# -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4
 import os
 import argparse
 
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import cm
+
+# Fix font used for display to prevent display problems with non-ASCII
+# characters.
+matplotlib.rc('font', family='DejaVu Sans')
 
 def generate_diff(filenames):
     """
@@ -50,7 +56,7 @@ def plot_csv_data(dataList, y_label):
       for col_name in data.dtype.names:
           # Use a different color for each line
           c = cmap(float(i+1)/(N+1))
-          line, = ax.plot(data[col_name], label=col_name, color=c)
+          line, = ax.plot(data[col_name], label=unicode(col_name, 'utf-8'), color=c)
           lines.append(line)
           i+=1
 
@@ -62,7 +68,6 @@ def plot_csv_data(dataList, y_label):
         pass # module does not exist
 
     # Legend
-
     plt.tight_layout()
     plt.xlabel("iteration number")
     plt.ylabel(y_label)
