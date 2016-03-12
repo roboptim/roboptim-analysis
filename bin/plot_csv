@@ -125,7 +125,9 @@ def run(**kwargs):
     for f in kwargs['files']:
         full_path = os.path.join(log_dir, f)
         for ff in glob.glob(full_path):
-            log_files.add(os.path.relpath(ff, log_dir))
+            _, ext = os.path.splitext(ff)
+            if os.path.isfile(ff) and ext.lower() == '.csv':
+                log_files.add(os.path.relpath(ff, log_dir))
 
     if not log_files:
         print("No file found. Exiting.")
