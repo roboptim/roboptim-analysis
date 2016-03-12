@@ -4,6 +4,7 @@
 import os
 import argparse
 import codecs
+import glob
 
 import numpy as np
 import matplotlib
@@ -119,7 +120,11 @@ def plot_csv_file(filenames, y_label):
 
 def run(**kwargs):
     log_dir = kwargs['dir']
-    log_files = kwargs['files']
+    log_files = set()
+    for f in kwargs['files']:
+        full_path = os.path.join(log_dir, f)
+        for ff in glob.glob(full_path):
+            log_files.add(os.path.relpath(ff, log_dir))
     plot_raw = kwargs['mode'] == 'raw'
     plot_diff = kwargs['mode'] == 'diff'
 
