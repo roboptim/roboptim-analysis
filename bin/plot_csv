@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4
 import os
+import sys
 import argparse
 import codecs
 import glob
@@ -125,6 +126,15 @@ def run(**kwargs):
         full_path = os.path.join(log_dir, f)
         for ff in glob.glob(full_path):
             log_files.add(os.path.relpath(ff, log_dir))
+
+    if not log_files:
+        print("No file found. Exiting.")
+        sys.exit(0)
+    else:
+        print("Plotting the following files:")
+        for f in log_files:
+            print("  - %s" % f)
+
     plot_raw = kwargs['mode'] == 'raw'
     plot_diff = kwargs['mode'] == 'diff'
 
