@@ -117,7 +117,7 @@ def plot_csv_file(filenames, y_label):
     # Plot generated data
     plot_csv_data(dataList, y_label)
 
-def main(**kwargs):
+def run(**kwargs):
     log_dir = kwargs['dir']
     log_files = kwargs['files']
     plot_raw = kwargs['mode'] == 'raw'
@@ -129,7 +129,7 @@ def main(**kwargs):
 
     filenames = list()
     for f in log_files:
-        filenames.append(log_dir + '/' + f)
+        filenames.append(os.path.join(log_dir, f))
 
     if plot_raw:
         plot_csv_file(filenames, y_label="raw data")
@@ -150,4 +150,5 @@ if __name__ == '__main__':
                         ' for difference at each iteration)')
     parser.add_argument('-d', '--dir', type=str, help='log directory', default='.')
     args = parser.parse_args()
-    main(**vars(args))
+
+    run(**vars(args))
