@@ -37,11 +37,17 @@ def generate_diff(filenames):
 
     diffList = list()
     for data in dataList:
-        d = np.zeros(data[0].shape, dtype=data[0].dtype)
+        values = data[0]
         names = data[1]
+        d = np.zeros(values.shape, dtype=values.dtype)
         diffList.append((d, names))
-        for i in range(1,data[0].shape[0]):
-            diffList[-1][0][i,:] = data[0][i,:] - data[0][i-1,:]
+        n_values = values.shape[0]
+        for i in range(1,n_values):
+            # TODO: improve this
+            if len(values.shape) == 2:
+                diffList[-1][0][i,:] = values[i,:] - values[i-1,:]
+            else:
+                diffList[-1][0][i] = values[i] - values[i-1]
 
     return diffList
 
@@ -58,11 +64,21 @@ def plot_csv_data(dataList, y_label):
     i = 0
 
     for data in dataList:
+      values = data[0]
       names = data[1]
-      for idx,col_name in enumerate(names):
+      n_values = 1
+      if len(values.shape) > 1:
+          n_values = values.shape[1]
+      for idx in range(n_values):
           # Use a different color for each line
           c = cmap(float(i+1)/(N+1))
-          line, = ax.plot(data[0][:,idx], label=col_name, color=c)
+          if names:
+              col_name=names[idx]
+          # TODO: improve this
+          if len(data[0].shape) == 2:
+              line, = ax.plot(values[:,idx], label=col_name, color=c)
+          else:
+              line, = ax.plot(values[:], label=col_name, color=c)
           lines.append(line)
           i+=1
 
@@ -109,7 +125,7 @@ def main(**kwargs):
 
     # Check the existence of the log directory
     if not(os.path.isdir(log_dir) and os.path.isfile(log_dir + '/journal.log')):
-        raise Exception("Invalid RobOptim log directory")
+        raise Exception("Invalid RobOptim log directory: %s" % log_dir)
 
     filenames = list()
     for f in log_files:
@@ -126,12 +142,12 @@ if __name__ == '__main__':
     # Parse arguments
     parser = argparse.ArgumentParser(description='Plot CSV data from RobOptim logs')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.1')
-    parser.add_argument('dir', type=str, help='log directory')
     parser.add_argument('-f', '--files', nargs='*', type=str, metavar='',
                         help='input CSV files (relative paths in log directory)',
                         default=['x-evolution.csv'])
     parser.add_argument('--mode', choices=plot_modes, default="raw",
                         help='plot mode (\'raw\' for raw values, or \'diff\''
                         ' for difference at each iteration)')
+    parser.add_argument('-d', '--dir', type=str, help='log directory', default='.')
     args = parser.parse_args()
     main(**vars(args))
