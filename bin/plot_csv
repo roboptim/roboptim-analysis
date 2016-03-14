@@ -88,7 +88,9 @@ def plot_csv_data(dataList, y_label, use_log=False):
     try:
         from mpldatacursor import HighlightingDataCursor
         HighlightingDataCursor(lines, highlight_color='red')
+        has_mpldatacursor = True
     except ImportError:
+        has_mpldatacursor = False
         pass # module does not exist
 
     # Logarithmic scale
@@ -96,10 +98,14 @@ def plot_csv_data(dataList, y_label, use_log=False):
         ax.set_yscale('log')
 
     # Legend
-    plt.tight_layout()
     plt.xlabel("iteration number")
     plt.ylabel(y_label)
-    plt.legend(loc='upper right')
+
+    # Only show legend if mpldatacursor is not availble:
+    if not has_mpldatacursor:
+        plt.legend(loc='upper right')
+
+    plt.tight_layout()
     plt.show(block=True)
 
 def plot_csv_file(filenames, y_label, use_log):
